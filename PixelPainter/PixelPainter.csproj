@@ -6,11 +6,22 @@
         <Nullable>enable</Nullable>
         <UseWPF>true</UseWPF>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <ApplicationIcon>Griseo.ico</ApplicationIcon>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="AssimpNet" Version="5.0.0-beta1" />
       <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Mesh\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Box.obj">
+        <DependentUpon>Mesh.xaml</DependentUpon>
+      </None>
     </ItemGroup>
 
 </Project>
