@@ -15,13 +15,15 @@ public struct Translation
         Position = translation;
         Rotation = rotation;
         Scale = scale;
+        
+        Rebuild();
     }
 
     public void Rebuild()
     {
         Matrix4x4 mRot = Matrix4x4.CreateFromQuaternion(Rotation);
-        Matrix4x4 mTra = new Matrix4x4();
-        Matrix4x4 mSca = new Matrix4x4();
+        Matrix4x4 mTra = Matrix4x4.Identity;
+        Matrix4x4 mSca = Matrix4x4.Identity;
 
         mTra[0, 3] = Position.X;
         mTra[1, 3] = Position.Y;

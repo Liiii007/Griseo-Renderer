@@ -13,11 +13,11 @@ namespace PixelPainter
         public MainWindow()
         {
             InitializeComponent();
-
-            //Do init job
-            Mesh mesh = new Mesh("C:/Users/liiii/Documents/GitHub/PixelPainter/Pixel-Painter/Mesh/Box.obj");
             Singleton<RenderPipeline>.Instance.Init(RenderResult);
-            Singleton<RenderPipeline>.Instance.AddRenderObject(new RenderObject(mesh));
+
+            Mesh box = new Mesh(@"C:\Users\liiii\Documents\GitHub\Griseo-Render\GriseoRender\Box.obj");
+            RenderObject obj = new RenderObject(box);
+            Singleton<RenderPipeline>.Instance.AddRenderObject(obj);
 
             //Start Render Tick
             Thread renderJob = new Thread(RenderJob);
@@ -35,7 +35,7 @@ namespace PixelPainter
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     Title =
-                        $"Griseo Render    delta:{pipeline.DeltaTime:0.0000}, FPS:{pipeline.FPS}, frame:{pipeline.CurrentFrame}";
+                        $"Griseo Render    DeltaMS:{pipeline.DeltaTime * 1000:0.00}, FPS:{pipeline.FPS}, Frame:{pipeline.CurrentFrame}";
                 });
             }
         }

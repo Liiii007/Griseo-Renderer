@@ -7,6 +7,7 @@
         <UseWPF>true</UseWPF>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <ApplicationIcon>Griseo.ico</ApplicationIcon>
+        <RootNamespace>PixelPainter</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -15,13 +16,22 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Mesh\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <None Update="Box.obj">
         <DependentUpon>Mesh.xaml</DependentUpon>
       </None>
+      <None Remove="Mesh\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Mesh\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="Mesh\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Page Remove="Mesh\**" />
     </ItemGroup>
 
 </Project>

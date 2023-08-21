@@ -31,7 +31,7 @@ public static class RenderMath
         return (min, max);
     }
 
-    
+
     public static (float a, float b, float c) GetBCCoord(Vector2 pA, Vector2 pB, Vector2 pC, Vector2 p)
     {
         float xa = pA.X;
@@ -49,5 +49,17 @@ public static class RenderMath
                   ((ya - yc) * xb + (xc - xa) * yb + xa * yc - xc * ya);
         float a = 1 - b - c;
         return (a, b, c);
+    }
+
+    public static Vector4 Multiply(Matrix4x4 mat, Vector4 vec)
+    {
+        //TODO:SIMD Optimize
+        return new Vector4()
+        {
+            X = mat.M11 * vec.X + mat.M12 * vec.Y + mat.M13 * vec.Z + mat.M14 * vec.W,
+            Y = mat.M21 * vec.X + mat.M22 * vec.Y + mat.M23 * vec.Z + mat.M24 * vec.W,
+            Z = mat.M31 * vec.X + mat.M32 * vec.Y + mat.M33 * vec.Z + mat.M34 * vec.W,
+            W = mat.M41 * vec.X + mat.M42 * vec.Y + mat.M43 * vec.Z + mat.M44 * vec.W,
+        };
     }
 }

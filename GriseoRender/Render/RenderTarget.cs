@@ -114,10 +114,10 @@ public class RenderTarget
         span.Fill(color);
     }
 
-    public ScreenColor this[int index]
+    public ScreenColor this[int x, int y]
     {
-        get => _pixels[index];
-        set => _pixels[index] = value;
+        get => _pixels[x + (Height - y - 1) * Width];
+        set => _pixels[x + (Height - y - 1) * Width] = value;
     }
 
     public ScreenColor[] GetPixelsArray()
