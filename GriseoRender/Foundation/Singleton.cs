@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PixelPainter.Foundation;
+namespace GriseoRender.Foundation;
 
 public static class Singleton<T> where T : new()
 {

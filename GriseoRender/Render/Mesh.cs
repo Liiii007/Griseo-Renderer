@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
-using PixelPainter.Render;
+using GriseoRender.Render;
 
-namespace PixelPainter.Resources;
+namespace GriseoRender.Resources;
 
 public class Mesh
 {

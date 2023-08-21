@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
 
-namespace PixelPainter.Render;
+namespace GriseoRender.Render;
 
 public class Camera
 {
@@ -25,6 +25,11 @@ public class Camera
     {
         Position = position;
         Rotation = rotation;
+    }
+
+    public void AddPosition(Vector3 offset)
+    {
+        Position += offset;
     }
 
     public Matrix4x4 VP

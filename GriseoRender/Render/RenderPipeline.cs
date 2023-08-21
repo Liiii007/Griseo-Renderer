@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace PixelPainter.Render;
+namespace GriseoRender.Render;
 
 public class RenderPipeline
 {
@@ -16,11 +16,12 @@ public class RenderPipeline
     private List<RenderTarget> _rts;
     private Stopwatch _stopwatch;
 
-    public void Init(Image screen)
+    public void Init(Image screen, Camera camera)
     {
         _stopwatch = Stopwatch.StartNew();
         _screen = screen;
-        _camera = new Camera(new Vector3(0, 1.5f, 2), Quaternion.CreateFromYawPitchRoll(0, 0, 0));
+        _camera = camera;
+        
         _objects = new List<RenderObject>();
         _rts = new List<RenderTarget>()
         {
@@ -45,6 +46,8 @@ public class RenderPipeline
 
         var rt = CurrentRT;
         rt.Clear(ScreenColor.Black);
+        
+        RenderBackgroundUV();
 
         foreach (var obj in _objects)
         {
@@ -146,6 +149,11 @@ public class RenderPipeline
         var yMin = (int)bound.min.Y;
         var yMax = (int)bound.max.Y;
 
+        if (xMin < 0 || xMax >= colorRT.Width || yMin < 0 || yMax >= colorRT.Height)
+        {
+            return;
+        }
+
         for (int x = xMin; x < xMax; x++)
         {
             for (int y = yMin; y < yMax; y++)
@@ -155,38 +163,6 @@ public class RenderPipeline
                 if (0 < a && a < 1 && 0 < b && b < 1 && 0 < c && c < 1)
                 {
                     colorRT[x, y] = ScreenColor.White;
-                }
-            }
-        }
-    }
-
-    private void RenderSimpleTriangle()
-    {
-        var target = CurrentRT;
-
-        Vector2 p1 = new(500, 100);
-        Vector2 p2 = new(100, 600);
-        Vector2 p3 = new(1000, 400);
-
-        var bound = RenderMath.GetBoundBox(p1, p2, p3);
-        var xMin = (int)bound.min.X;
-        var xMax = (int)bound.max.X;
-        var yMin = (int)bound.min.Y;
-        var yMax = (int)bound.max.Y;
-
-
-        for (int x = xMin; x < xMax; x++)
-        {
-            for (int y = yMin; y < yMax; y++)
-            {
-                var (a, b, c) = RenderMath.GetBCCoord(p1, p2, p3, new(x, y));
-
-                if (0 < a && a < 1 && 0 < b && b < 1 && 0 < c && c < 1)
-                {
-                    target[x, y] = new ScreenColor()
-                    {
-                        R = a, G = b, B = c, A = 1
-                    };
                 }
             }
         }

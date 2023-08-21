@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
-using PixelPainter.Resources;
+using GriseoRender.Resources;
 
-namespace PixelPainter.Render;
+namespace GriseoRender.Render;
 
 public class RenderObject
 {

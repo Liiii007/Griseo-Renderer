@@ -1,10 +1,12 @@
-﻿using System.Threading;
+﻿using System;
+using System.Numerics;
+using System.Threading;
 using System.Windows;
-using PixelPainter.Foundation;
-using PixelPainter.Render;
-using PixelPainter.Resources;
+using GriseoRender.Foundation;
+using GriseoRender.Render;
+using GriseoRender.Resources;
 
-namespace PixelPainter
+namespace GriseoRender
 {
     public partial class MainWindow : Window
     {
@@ -13,29 +15,50 @@ namespace PixelPainter
         public MainWindow()
         {
             InitializeComponent();
-            Singleton<RenderPipeline>.Instance.Init(RenderResult);
+
+            var cameraManager = Singleton<CameraManager>.Instance;
+            cameraManager.Init();
+            Singleton<RenderPipeline>.Instance.Init(RenderResult, cameraManager.MainCamera);
+            Singleton<InputManager>.Instance.OnW += () =>
+            {
+                cameraManager.MainCamera.AddPosition(new Vector3(0, 0, -0.1f));
+            };
+            Singleton<InputManager>.Instance.OnS += () =>
+            {
+                cameraManager.MainCamera.AddPosition(new Vector3(0, 0, 0.1f));
+            };
+            Singleton<InputManager>.Instance.OnA += () =>
+            {
+                cameraManager.MainCamera.AddPosition(new Vector3(-0.1f, 0, 0));
+            };
+            Singleton<InputManager>.Instance.OnD += () =>
+            {
+                cameraManager.MainCamera.AddPosition(new Vector3(0.1f, 0, 0));
+            };
 
             Mesh box = new Mesh(@"C:\Users\liiii\Documents\GitHub\Griseo-Render\GriseoRender\Box.obj");
             RenderObject obj = new RenderObject(box);
             Singleton<RenderPipeline>.Instance.AddRenderObject(obj);
 
             //Start Render Tick
-            Thread renderJob = new Thread(RenderJob);
+            Thread renderJob = new Thread(Tick);
             renderJob.IsBackground = true;
             renderJob.Start();
         }
 
-        private void RenderJob()
+        private void Tick()
         {
             while (_running)
             {
+                Singleton<InputManager>.Instance.Query();
+
                 var pipeline = Singleton<RenderPipeline>.Instance;
                 pipeline.RenderTick();
 
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    Title =
-                        $"Griseo Render    DeltaMS:{pipeline.DeltaTime * 1000:0.00}, FPS:{pipeline.FPS}, Frame:{pipeline.CurrentFrame}";
+                    double deltaTime = pipeline.DeltaTime * 1000;
+                    Title = $"Griseo Render  DeltaMS:{deltaTime:0.00}, FPS:{pipeline.FPS}, Frame:{pipeline.CurrentFrame}";
                 });
             }
         }

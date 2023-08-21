@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace PixelPainter.Render;
+namespace GriseoRender.Render;
 
 public struct Vertex
 {

@@ -1,7 +1,7 @@
-﻿<Application x:Class="PixelPainter.App"
+﻿<Application x:Class="GriseoRender.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:PixelPainter"
+             xmlns:local="clr-namespace:GriseoRender"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          

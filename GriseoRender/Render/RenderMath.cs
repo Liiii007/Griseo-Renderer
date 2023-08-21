@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
 
-namespace PixelPainter.Render;
+namespace GriseoRender.Render;
 
 public static class RenderMath
 {

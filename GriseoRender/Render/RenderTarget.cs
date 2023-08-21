@@ -6,7 +6,7 @@ using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace PixelPainter.Render;
+namespace GriseoRender.Render;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct ScreenColor

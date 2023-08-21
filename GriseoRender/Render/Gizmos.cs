@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Drawing;
 using System.Numerics;
-using PixelPainter.Foundation;
+using GriseoRender.Foundation;
 
-namespace PixelPainter.Render;
+namespace GriseoRender.Render;
 
 public class Gizmos
 {
