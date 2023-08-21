@@ -4,10 +4,7 @@ namespace PixelPainter.Render;
 
 public struct Triangle
 {
-    public Triangle(Vector3 vertex)
-    {
-        Vertex = vertex;
-    }
-    
-    public Vector3 Vertex;
+    public int i1;
+    public int i2;
+    public int i3;
 }
