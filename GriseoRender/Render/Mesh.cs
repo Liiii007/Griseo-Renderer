@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
-using GriseoRender.Render;
+using GriseoRenderer.Render;
 
-namespace GriseoRender.Resources;
+namespace GriseoRenderer.Resources;
 
 public class Mesh
 {

@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace GriseoRender;
+namespace GriseoRenderer;
 
 public struct Translation
 {
@@ -39,11 +39,5 @@ public struct Translation
     public Matrix4x4 GetTransformMatrix()
     {
         return TRS;
-    }
-
-    public Vector4 Transform(Vector4 origin)
-    {
-        var result = Vector4.Transform(origin, TRS);
-        return result;
     }
 }

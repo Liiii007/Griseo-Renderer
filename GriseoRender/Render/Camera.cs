@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
 
-namespace GriseoRender.Render;
+namespace GriseoRenderer.Render;
 
 public class Camera
 {
@@ -12,11 +12,11 @@ public class Camera
     public Vector3 Forward => Vector3.Transform(new Vector3(0, 0, -1), Rotation);
     public Vector3 Right => Vector3.Transform(new Vector3(1, 0, 0), Rotation);
     
-    public float Fov = 40;
+    public float Fov = 60f;
     public float Ratio => 1280f / 720f;
-    public float n = 0.1f;
+    public float n = 0.01f;
     public float f = 10000f;
-    public float t => MathF.Tan(MathF.PI / 180 * Fov / 2);
+    public float t => MathF.Tan(MathF.PI / 180 * Fov / 2) * n;
     public float b => -t;
     public float r => Ratio * t;
     public float l => -r;

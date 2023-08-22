@@ -1,12 +1,11 @@
-﻿using System;
-using System.Numerics;
+﻿using System.Numerics;
 using System.Threading;
 using System.Windows;
-using GriseoRender.Foundation;
-using GriseoRender.Render;
-using GriseoRender.Resources;
+using GriseoRenderer.Foundation;
+using GriseoRenderer.Render;
+using GriseoRenderer.Resources;
 
-namespace GriseoRender
+namespace GriseoRenderer
 {
     public partial class MainWindow : Window
     {
@@ -35,6 +34,14 @@ namespace GriseoRender
             {
                 cameraManager.MainCamera.AddPosition(new Vector3(0.1f, 0, 0));
             };
+            Singleton<InputManager>.Instance.OnQ += () =>
+            {
+                cameraManager.MainCamera.AddPosition(new Vector3(0, -0.1f, 0));
+            };
+            Singleton<InputManager>.Instance.OnE += () =>
+            {
+                cameraManager.MainCamera.AddPosition(new Vector3(0, 0.1f, 0));
+            };
 
             Mesh box = new Mesh(@"C:\Users\liiii\Documents\GitHub\Griseo-Render\GriseoRender\Box.obj");
             RenderObject obj = new RenderObject(box);
@@ -58,7 +65,7 @@ namespace GriseoRender
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     double deltaTime = pipeline.DeltaTime * 1000;
-                    Title = $"Griseo Render  DeltaMS:{deltaTime:0.00}, FPS:{pipeline.FPS}, Frame:{pipeline.CurrentFrame}";
+                    Title = $"Griseo Renderer  DeltaMS:{deltaTime:0.00}, FPS:{pipeline.FPS}, Frame:{pipeline.CurrentFrame}";
                 });
             }
         }

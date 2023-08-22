@@ -1,16 +1,31 @@
 ﻿using System;
 using System.Numerics;
 
-namespace GriseoRender.Render;
+namespace GriseoRenderer.Render;
 
 public static class RenderMath
 {
-    private static float Min(float a, float b, float c)
+    public static Vector3 ToVector3(this Vector4 value)
+    {
+        return new Vector3(value.X, value.Y, value.Z);
+    }
+
+    public static Vector4 ToVector4(this Vector3 value)
+    {
+        return new Vector4(value.X, value.Y, value.Z, 0);
+    }
+
+    public static Vector4 ToPoint4(this Vector3 value)
+    {
+        return new Vector4(value.X, value.Y, value.Z, 1);
+    }
+
+    public static float Min(float a, float b, float c)
     {
         return MathF.Min(a, MathF.Min(b, c));
     }
 
-    private static float Max(float a, float b, float c)
+    public static float Max(float a, float b, float c)
     {
         return MathF.Max(a, MathF.Max(b, c));
     }
@@ -30,7 +45,6 @@ public static class RenderMath
 
         return (min, max);
     }
-
 
     public static (float a, float b, float c) GetBCCoord(Vector2 pA, Vector2 pB, Vector2 pC, Vector2 p)
     {
@@ -60,6 +74,38 @@ public static class RenderMath
             Y = mat.M21 * vec.X + mat.M22 * vec.Y + mat.M23 * vec.Z + mat.M24 * vec.W,
             Z = mat.M31 * vec.X + mat.M32 * vec.Y + mat.M33 * vec.Z + mat.M34 * vec.W,
             W = mat.M41 * vec.X + mat.M42 * vec.Y + mat.M43 * vec.Z + mat.M44 * vec.W,
+        };
+    }
+
+    public static float Dot(Vector4 v1, Vector4 v2)
+    {
+        return Dot(v1.ToVector3(), v2.ToVector3());
+    }
+
+    public static float Dot(Vector3 v1, Vector4 v2)
+    {
+        return Dot(v1, v2.ToVector3());
+    }
+
+    public static float Dot(Vector4 v1, Vector3 v2)
+    {
+        return Dot(v1.ToVector3(), v2);
+    }
+
+    public static float Dot(Vector3 v1, Vector3 v2)
+    {
+        return v1.X * v2.X + v1.Y * v2.Y + v1.Z * v2.Z;
+    }
+
+    //Left hands
+    public static Vector4 Cross(Vector4 u, Vector4 v)
+    {
+        return new Vector4()
+        {
+            X = u.Y * v.Z - u.Z * v.Y,
+            Y = -(u.Z * v.X - u.X * v.Z),
+            Z = u.X * v.Y - u.Y * v.X,
+            W = 0
         };
     }
 }

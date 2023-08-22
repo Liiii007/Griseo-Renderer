@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GriseoRender.Foundation;
+namespace GriseoRenderer.Foundation;
 
 public static class Singleton<T> where T : new()
 {

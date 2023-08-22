@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
-using GriseoRender.Resources;
+using GriseoRenderer.Resources;
 
-namespace GriseoRender.Render;
+namespace GriseoRenderer.Render;
 
 public class RenderObject
 {

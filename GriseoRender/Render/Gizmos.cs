@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Drawing;
 using System.Numerics;
-using GriseoRender.Foundation;
+using GriseoRenderer.Foundation;
 
-namespace GriseoRender.Render;
+namespace GriseoRenderer.Render;
 
 public class Gizmos
 {
@@ -21,5 +21,10 @@ public class Gizmos
                 rt[i, j] = ScreenColor.Red;
             }
         }
+    }
+
+    public static void DrawLine(Vector3 position, Vector3 direction)
+    {
+        throw new NotImplementedException();
     }
 }

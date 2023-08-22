@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace GriseoRender.Render;
+namespace GriseoRenderer.Render;
 
 public class RenderPipeline
 {
@@ -21,7 +21,7 @@ public class RenderPipeline
         _stopwatch = Stopwatch.StartNew();
         _screen = screen;
         _camera = camera;
-        
+
         _objects = new List<RenderObject>();
         _rts = new List<RenderTarget>()
         {
@@ -46,7 +46,7 @@ public class RenderPipeline
 
         var rt = CurrentRT;
         rt.Clear(ScreenColor.Black);
-        
+
         RenderBackgroundUV();
 
         foreach (var obj in _objects)
@@ -100,6 +100,22 @@ public class RenderPipeline
             Vector4 p1 = obj.VerticesOut[faceIndex.a].Position;
             Vector4 p2 = obj.VerticesOut[faceIndex.b].Position;
             Vector4 p3 = obj.VerticesOut[faceIndex.c].Position;
+
+            if (p1.Z < -1 || p2.Z < -1 || p3.Z < -1)
+            {
+                continue;
+            }
+
+            //Back culling
+            Vector4 v1 = p2 - p1;
+            Vector4 v2 = p3 - p2;
+
+            Vector4 normal = RenderMath.Cross(v1, v2);
+
+            if (RenderMath.Dot(normal, _camera.Forward) > 0)
+            {
+                continue;
+            }
 
             DrawTriangle(p1, p2, p3, rt);
         }

@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace GriseoRender.Render;
+namespace GriseoRenderer.Render;
 
 public struct Vertex
 {

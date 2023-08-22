@@ -1,7 +1,8 @@
-﻿using System.Numerics;
-using GriseoRender.Render;
+﻿using System;
+using System.Numerics;
+using GriseoRenderer.Render;
 
-namespace GriseoRender.Foundation;
+namespace GriseoRenderer.Foundation;
 
 public class CameraManager
 {

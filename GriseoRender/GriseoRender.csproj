@@ -7,7 +7,7 @@
         <UseWPF>true</UseWPF>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <ApplicationIcon>Griseo.ico</ApplicationIcon>
-        <RootNamespace>PixelPainter</RootNamespace>
+        <RootNamespace>GriseoRenderer</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
