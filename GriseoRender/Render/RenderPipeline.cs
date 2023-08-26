@@ -6,6 +6,8 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using GriseoRenderer.Foundation;
+using GriseoRenderer.JobSystem;
 using PixelPainter.Render;
 
 namespace GriseoRenderer.Render;
@@ -221,6 +223,23 @@ public class RenderPipeline
         yMin = Math.Max(0, yMin);
         yMax = Math.Min(colorRT.Height - 1, yMax);
 
+        var job = new RenderJob
+        {
+            xMin = xMin,
+            xMax = xMax,
+            yMin = yMin,
+            yMax = yMax,
+            fin = fin,
+            colorRT = colorRT,
+            depthRT = depthRT,
+            pipeline = this
+        };
+
+        var handle = Singleton<JobScheduler>.Instance.Schedule(job, 0, (xMax - xMin) * (yMax - yMin), 128);
+        handle.Complete();
+        
+        return;
+
         for (int x = xMin; x <= xMax; x++)
         {
             for (int y = yMin; y <= yMax; y++)
@@ -254,7 +273,7 @@ public class RenderPipeline
         }
     }
 
-    private ScreenColor OpaqueLighting(Vector4 positionW, Vector4 normalW, Vector2 uv)
+    public ScreenColor OpaqueLighting(Vector4 positionW, Vector4 normalW, Vector2 uv)
     {
         var texColor = new RealColor(1);
         if (_mainTexSampler != null)

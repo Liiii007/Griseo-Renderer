@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Windows;
 using GriseoRenderer.Foundation;
+using GriseoRenderer.JobSystem;
 using GriseoRenderer.Render;
 using GriseoRenderer.Resources;
 using PixelPainter.Render;
@@ -21,7 +22,11 @@ namespace GriseoRenderer
             var cameraManager = Singleton<CameraManager>.Instance;
             cameraManager.Init();
             Singleton<RenderPipeline>.Instance.Init(RenderResult, cameraManager.MainCamera);
-
+            Singleton<JobScheduler>.Instance.Init();
+            
+            var handle = Singleton<JobScheduler>.Instance.Schedule(new JobsTest(), 0, 17, 4);
+            handle.Complete();
+            
             //TODO:Move to json config
             //Add objects and lights
             Mesh box = new Mesh(@"C:\Users\liiii\Documents\GitHub\Griseo-Render\GriseoRender\Box.obj");
