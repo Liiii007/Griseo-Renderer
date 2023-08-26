@@ -18,6 +18,8 @@ public class RenderPipeline
     private List<DirectLight> _lights;
     private List<RenderTarget> _rts;
     private List<DepthRenderTarget> _drts;
+    private Texture _mainTexSampler;
+    private Texture _normalMapSampler;
     private Stopwatch _stopwatch;
 
     public void Init(Image screen, Camera camera)
@@ -78,7 +80,6 @@ public class RenderPipeline
         double endTime = _stopwatch.Elapsed.TotalSeconds;
         DeltaTime = (endTime - startTime);
     }
-
 
     public void RenderObject(RenderObject obj, RenderTarget colorRT, DepthRenderTarget depthRT)
     {
@@ -148,6 +149,8 @@ public class RenderPipeline
                 continue;
             }
 
+            _mainTexSampler = obj.MainTex;
+            _normalMapSampler = obj.MainTex;
             Rasterlation(fin, colorRT, depthRT);
         }
 
@@ -238,10 +241,11 @@ public class RenderPipeline
                 {
                     var positionW = fin[0].PositionW * a + fin[1].PositionW * b + fin[2].PositionW * c;
                     var normalW = fin[0].NormalW * a + fin[1].NormalW * b + fin[2].NormalW * c;
+                    var uv = fin[0].TexCoord * a + fin[1].TexCoord * b + fin[2].TexCoord * c;
 
                     //Pixel shader
                     //Write color rt
-                    colorRT[x, y] = OpaqueLighting(positionW, normalW);
+                    colorRT[x, y] = OpaqueLighting(positionW, normalW, uv);
 
                     //Write depth rt
                     depthRT[x, y] = depth;
@@ -250,8 +254,14 @@ public class RenderPipeline
         }
     }
 
-    private ScreenColor OpaqueLighting(Vector4 positionW, Vector4 normalW)
+    private ScreenColor OpaqueLighting(Vector4 positionW, Vector4 normalW, Vector2 uv)
     {
+        var texColor = new RealColor(1);
+        if (_mainTexSampler != null)
+        {
+            texColor = _mainTexSampler[(int)(uv.X * _mainTexSampler.Width), (int)(uv.Y * _mainTexSampler.Height)];
+        }
+
         var ambient = new RealColor(0.1f, 0.1f, 0.1f);
         var diffuse = new RealColor();
         var specular = new RealColor();
@@ -269,6 +279,7 @@ public class RenderPipeline
         }
 
         var rColor = ambient + diffuse + specular;
+        rColor *= texColor;
         var screenColor = rColor.AsScreenColor;
         screenColor.A = 1f;
         return screenColor;

@@ -56,6 +56,11 @@ public struct RealColor
         return new RealColor(a.R * rate, a.G * rate, a.B * rate, a.A * rate);
     }
 
+    public static RealColor operator *(RealColor a, RealColor b)
+    {
+        return new RealColor(a.R * b.R, a.G * b.G, a.B * b.B, a.A * b.A);
+    }
+    
     public static RealColor operator *(float rate, RealColor a)
     {
         return a * rate;

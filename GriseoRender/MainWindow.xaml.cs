@@ -25,7 +25,8 @@ namespace GriseoRenderer
             //TODO:Move to json config
             //Add objects and lights
             Mesh box = new Mesh(@"C:\Users\liiii\Documents\GitHub\Griseo-Render\GriseoRender\Box.obj");
-            RenderObject obj = new RenderObject(box);
+            Texture mainTex = new Texture(@"C:\Users\liiii\Documents\GitHub\Griseo-Render\GriseoRender\MainTex.png");
+            RenderObject obj = new RenderObject(box, mainTex);
             Singleton<RenderPipeline>.Instance.AddRenderObject(obj);
             light = new DirectLight(RenderMath.EulerToQuaternion(0, 0, 0));
             Singleton<RenderPipeline>.Instance.AddDirectLight(light);
