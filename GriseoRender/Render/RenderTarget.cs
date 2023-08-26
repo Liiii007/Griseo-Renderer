@@ -39,6 +39,8 @@ public struct RealColor
         }
     }
 
+    public RealColor Step0 => new(Math.Max(0, R), Math.Max(0, G), Math.Max(0, B), Math.Max(0, A));
+
     public static RealColor operator +(RealColor a, RealColor b)
     {
         return new RealColor(a.R + b.R, a.G + b.G, a.B + b.B, a.A + b.A);

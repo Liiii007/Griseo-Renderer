@@ -55,7 +55,7 @@ public static class RenderMath
     {
         return GetBoundBox2D(ToVector2(p1), ToVector2(p2), ToVector2(p3));
     }
-    
+
     public static (Vector2 min, Vector2 max) GetBoundBox2D(Vector4 p1, Vector4 p2, Vector4 p3)
     {
         return GetBoundBox2D(ToVector2(p1), ToVector2(p2), ToVector2(p3));
@@ -65,7 +65,7 @@ public static class RenderMath
     {
         return new Vector2(v.X, v.Y);
     }
-    
+
     public static Vector2 ToVector2(Vector4 v)
     {
         return new Vector2(v.X, v.Y);
@@ -145,5 +145,29 @@ public static class RenderMath
     public static float Clamp01(float f)
     {
         return Math.Clamp(f, 0f, 1f);
+    }
+
+    public static Quaternion EulerToQuaternion(Vector3 degree)
+    {
+        degree *= MathF.PI / 180f;
+        return Quaternion.CreateFromYawPitchRoll(degree.X, degree.Y, degree.Z);
+    }
+
+    public static Quaternion EulerToQuaternion(float yaw, float pitch, float roll)
+    {
+        return EulerToQuaternion(new Vector3(yaw, pitch, roll));
+    }
+
+    public static Quaternion ForwardToQuaternion(Vector3 forward)
+    {
+        return Quaternion.CreateFromAxisAngle(forward, 0);
+    }
+
+    public static Vector4 Add(this Vector4 origin, Vector3 position)
+    {
+        origin.X += position.X;
+        origin.Y += position.Y;
+        origin.Z += position.Z;
+        return origin;
     }
 }

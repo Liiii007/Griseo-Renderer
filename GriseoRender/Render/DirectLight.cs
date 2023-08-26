@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Windows.Media.Imaging;
 using GriseoRenderer;
 using GriseoRenderer.Render;
 
@@ -6,16 +7,16 @@ namespace PixelPainter.Render;
 
 public class DirectLight
 {
-    public Vector4 Forward;
+    public Quaternion Rotation;
     public RealColor Color;
     public float Intensity;
 
-    public DirectLight(Vector4 forward)
+    public DirectLight(Quaternion rotation)
     {
-        Forward = Vector4.Normalize(forward);
+        Rotation = rotation;
         Color = new RealColor(1);
-        Intensity = 1f;
+        Intensity = 0.5f;
     }
 
-    // public Vector4 Forward => Vector4.Normalize(Vector4.Transform(new Vector4(0, 0, 1, 0), Rotation));
+    public Vector4 Forward => Vector4.Normalize(Vector4.Transform(new Vector4(0, 0, -1, 0), Rotation));
 }

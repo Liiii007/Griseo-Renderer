@@ -11,6 +11,7 @@ namespace GriseoRenderer
     public partial class MainWindow : Window
     {
         private bool _running = true;
+        private DirectLight light;
 
         public MainWindow()
         {
@@ -26,7 +27,7 @@ namespace GriseoRenderer
             Mesh box = new Mesh(@"C:\Users\liiii\Documents\GitHub\Griseo-Render\GriseoRender\Box.obj");
             RenderObject obj = new RenderObject(box);
             Singleton<RenderPipeline>.Instance.AddRenderObject(obj);
-            DirectLight light = new DirectLight(new(1, -1, 0, 0));
+            light = new DirectLight(RenderMath.EulerToQuaternion(0, 0, 0));
             Singleton<RenderPipeline>.Instance.AddDirectLight(light);
 
             //Start tick thread
@@ -39,9 +40,11 @@ namespace GriseoRenderer
         {
             while (_running)
             {
+                var pipeline = Singleton<RenderPipeline>.Instance;
                 Singleton<InputManager>.Instance.Query();
 
-                var pipeline = Singleton<RenderPipeline>.Instance;
+                // light.Rotation = RenderMath.EulerToQuaternion(pipeline.CurrentFrame * 0.016f * 100f, -30f, 0);
+
                 pipeline.RenderTick();
 
                 Application.Current.Dispatcher.Invoke(() =>

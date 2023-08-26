@@ -5,11 +5,11 @@ namespace GriseoRenderer.Render;
 
 public class Camera
 {
-    public Vector3 Position { get; set; }
+    public Vector4 Position { get; set; }
     public Quaternion Rotation { get; set; }
     
     public Vector3 Up => Vector3.Transform(new Vector3(0, 1, 0), Rotation);
-    public Vector3 Forward => Vector3.Transform(new Vector3(0, 0, -1), Rotation);
+    public Vector4 Forward => Vector4.Transform(new Vector4(0, 0, -1, 0), Rotation);
     public Vector3 Right => Vector3.Transform(new Vector3(1, 0, 0), Rotation);
     
     public float Fov = 60f;
@@ -23,13 +23,13 @@ public class Camera
 
     public Camera(Vector3 position, Quaternion rotation)
     {
-        Position = position;
+        Position = new(position.X, position.Y, position.Z, 1);
         Rotation = rotation;
     }
 
     public void AddPosition(Vector3 offset)
     {
-        Position += offset;
+        Position = Position.Add(offset);
     }
 
     public Matrix4x4 VP

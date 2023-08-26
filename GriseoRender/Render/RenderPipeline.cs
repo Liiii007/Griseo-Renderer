@@ -225,7 +225,7 @@ public class RenderPipeline
                 var (a, b, c) = RenderMath.GetBCCoord(p0H, p1H, p2H, new(x, y));
                 var depth = p0H.Z * a + p1H.Z * b + p2H.Z * c;
 
-                //Early-Z test: small->near
+                //Early-Z test: small->far
                 if (depth <= depthRT[x, y])
                 {
                     continue;
@@ -254,18 +254,21 @@ public class RenderPipeline
     {
         var ambient = new RealColor(0.1f, 0.1f, 0.1f);
         var diffuse = new RealColor();
+        var specular = new RealColor();
 
         foreach (var light in _lights)
         {
-            var lightColor = light.Color * light.Intensity * RenderMath.Dot(light.Forward, -normalW);
-            lightColor.R = Math.Max(0, lightColor.R);
-            lightColor.G = Math.Max(0, lightColor.G);
-            lightColor.B = Math.Max(0, lightColor.B);
-            lightColor.A = Math.Max(0, lightColor.A);
-            diffuse += lightColor;
+            var diffuseColor = light.Color * light.Intensity * RenderMath.Dot(light.Forward, -normalW);
+            diffuse += diffuseColor.Step0;
+
+            var viewDir = Vector4.Normalize(positionW - _camera.Position);
+            var half = -Vector4.Normalize(viewDir + light.Forward);
+            var specularStrength = MathF.Pow(RenderMath.Clamp01(RenderMath.Dot(half, normalW)), 1024);
+            var specularColor = light.Color * light.Intensity * specularStrength;
+            specular += specularColor.Step0;
         }
 
-        var rColor = ambient + diffuse;
+        var rColor = ambient + diffuse + specular;
         var screenColor = rColor.AsScreenColor;
         screenColor.A = 1f;
         return screenColor;
