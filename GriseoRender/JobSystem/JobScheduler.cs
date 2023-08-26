@@ -6,7 +6,7 @@ namespace GriseoRenderer.JobSystem;
 
 public class JobScheduler
 {
-    private Semaphore _semaphore = new Semaphore(0, 65536);
+    private Semaphore _semaphore = new Semaphore(0, int.MaxValue);
     private Thread[] _threads = new Thread[16];
     private ConcurrentQueue<IJob> _bundles = new ConcurrentQueue<IJob>();
 
@@ -20,22 +20,23 @@ public class JobScheduler
         }
     }
 
-    public JobHandle Schedule<T>(T jobs, int startIndex, int endIndex, int bundleSize) where T : struct, IJobFor
+    public JobHandle Schedule<T>(T jobs, int startIndex, int endIndex, int batchSize) where T : struct, IJobFor
     {
         if (endIndex <= startIndex)
         {
             throw new ArgumentException("Index error");
         }
 
-        JobHandle handle = new JobHandle((endIndex - startIndex) / bundleSize + 1);
         int bundleCount = 0;
-        for (int i = startIndex; i < endIndex; i += bundleSize)
+        JobHandle handle = new JobHandle();
+        for (int i = startIndex; i < endIndex; i += batchSize)
         {
             bundleCount++;
-            int rightIndex = Math.Min(endIndex, i + bundleSize);
+            int rightIndex = Math.Min(endIndex, i + batchSize);
             _bundles.Enqueue(new JobBundle<T>(jobs, i, rightIndex, handle));
         }
-
+        
+        handle.Init(bundleCount);
         _semaphore.Release(bundleCount);
         return handle;
     }

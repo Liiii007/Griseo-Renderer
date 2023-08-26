@@ -5,24 +5,22 @@ namespace GriseoRenderer.Render;
 public struct RenderJob : IJobFor
 {
     public int xMin;
-    public int xMax;
     public int yMin;
-    public int yMax;
+    public int width;
 
-    public VertexOut[] fin;
+    public TriangleIn fin;
     public RenderTarget colorRT;
     public DepthRenderTarget depthRT;
     public RenderPipeline pipeline;
 
     public void Execute(int index)
     {
-        int width = xMax - xMin;
-        int x = xMin + index % width;
-        int y = yMin + index / width;
+        int x = xMin + index % (width);
+        int y = yMin + index / (width);
 
-        var p0H = fin[0].PositionH;
-        var p1H = fin[1].PositionH;
-        var p2H = fin[2].PositionH;
+        var p0H = fin.v1.PositionH;
+        var p1H = fin.v2.PositionH;
+        var p2H = fin.v3.PositionH;
         var (a, b, c) = RenderMath.GetBCCoord(p0H, p1H, p2H, new(x, y));
         var depth = p0H.Z * a + p1H.Z * b + p2H.Z * c;
 
@@ -37,9 +35,9 @@ public struct RenderJob : IJobFor
 
         if (minValue <= a && a <= maxValue && minValue <= b && b <= maxValue && minValue <= c && c <= maxValue)
         {
-            var positionW = fin[0].PositionW * a + fin[1].PositionW * b + fin[2].PositionW * c;
-            var normalW = fin[0].NormalW * a + fin[1].NormalW * b + fin[2].NormalW * c;
-            var uv = fin[0].TexCoord * a + fin[1].TexCoord * b + fin[2].TexCoord * c;
+            var positionW = fin.v1.PositionW * a + fin.v2.PositionW * b + fin.v3.PositionW * c;
+            var normalW = fin.v1.NormalW * a + fin.v2.NormalW * b + fin.v3.NormalW * c;
+            var uv = fin.v1.TexCoord * a + fin.v2.TexCoord * b + fin.v3.TexCoord * c;
 
             //Pixel shader
             //Write color rt

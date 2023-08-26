@@ -70,7 +70,7 @@ public class RenderPipeline
         depthRT.Clear(-1);
 
         // RenderLine();
-        // RenderBackgroundUV();
+        // RenderUvJob();
 
         foreach (var obj in _objects)
         {
@@ -121,19 +121,19 @@ public class RenderPipeline
         //Fragment
         var indices = obj.Mesh.Indices;
 
-        var fin = new VertexOut[3];
+        var fin = new TriangleIn();
 
         for (int i = 0; i < indices.Length; i++)
         {
             var faceIndex = indices[i];
 
-            fin[0] = obj.VerticesOut[faceIndex.a];
-            fin[1] = obj.VerticesOut[faceIndex.b];
-            fin[2] = obj.VerticesOut[faceIndex.c];
+            fin.v1 = obj.VerticesOut[faceIndex.a];
+            fin.v2 = obj.VerticesOut[faceIndex.b];
+            fin.v3 = obj.VerticesOut[faceIndex.c];
 
-            Vector4 p1 = fin[0].PositionW;
-            Vector4 p2 = fin[1].PositionW;
-            Vector4 p3 = fin[2].PositionW;
+            Vector4 p1 = fin.v1.PositionW;
+            Vector4 p2 = fin.v2.PositionW;
+            Vector4 p3 = fin.v3.PositionW;
 
             if (p1.Z < -1 || p2.Z < -1 || p3.Z < -1)
             {
@@ -188,6 +188,17 @@ public class RenderPipeline
         }
     }
 
+    private void RenderUvJob()
+    {
+        var target = CurrentRT;
+        var job = new DrawUVJob()
+        {
+            target = target
+        };
+        var handle = Singleton<JobScheduler>.Instance.Schedule(job, 0, target.Length, 2048);
+        handle.Complete();
+    }
+
     private void RenderLine()
     {
         var target = CurrentRT;
@@ -202,15 +213,15 @@ public class RenderPipeline
         }
     }
 
-    private void Rasterlation(VertexOut[] fin, RenderTarget colorRT, DepthRenderTarget depthRT)
+    private void Rasterlation(TriangleIn fin, RenderTarget colorRT, DepthRenderTarget depthRT)
     {
-        var p0H = fin[0].PositionH;
-        var p1H = fin[1].PositionH;
-        var p2H = fin[2].PositionH;
+        var p0H = fin.v1.PositionH;
+        var p1H = fin.v2.PositionH;
+        var p2H = fin.v3.PositionH;
 
-        var p0W = fin[0].PositionW;
-        var p1W = fin[1].PositionW;
-        var p2W = fin[2].PositionW;
+        var p0W = fin.v1.PositionW;
+        var p1W = fin.v2.PositionW;
+        var p2W = fin.v3.PositionW;
 
         var bound = RenderMath.GetBoundBox2D(p0H, p1H, p2H);
         var xMin = (int)(bound.min.X + 0.5f);
@@ -223,54 +234,27 @@ public class RenderPipeline
         yMin = Math.Max(0, yMin);
         yMax = Math.Min(colorRT.Height - 1, yMax);
 
+        int width = xMax - xMin + 1;
+        int height = yMax - yMin + 1;
+
+        if (width <= 0 || height <= 0)
+        {
+            return;
+        }
+
         var job = new RenderJob
         {
             xMin = xMin,
-            xMax = xMax,
             yMin = yMin,
-            yMax = yMax,
+            width = width,
             fin = fin,
             colorRT = colorRT,
             depthRT = depthRT,
             pipeline = this
         };
 
-        var handle = Singleton<JobScheduler>.Instance.Schedule(job, 0, (xMax - xMin) * (yMax - yMin), 128);
+        var handle = Singleton<JobScheduler>.Instance.Schedule(job, 0, width * height, 128);
         handle.Complete();
-        
-        return;
-
-        for (int x = xMin; x <= xMax; x++)
-        {
-            for (int y = yMin; y <= yMax; y++)
-            {
-                var (a, b, c) = RenderMath.GetBCCoord(p0H, p1H, p2H, new(x, y));
-                var depth = p0H.Z * a + p1H.Z * b + p2H.Z * c;
-
-                //Early-Z test: small->far
-                if (depth <= depthRT[x, y])
-                {
-                    continue;
-                }
-
-                float minValue = 0;
-                float maxValue = 1;
-
-                if (minValue <= a && a <= maxValue && minValue <= b && b <= maxValue && minValue <= c && c <= maxValue)
-                {
-                    var positionW = fin[0].PositionW * a + fin[1].PositionW * b + fin[2].PositionW * c;
-                    var normalW = fin[0].NormalW * a + fin[1].NormalW * b + fin[2].NormalW * c;
-                    var uv = fin[0].TexCoord * a + fin[1].TexCoord * b + fin[2].TexCoord * c;
-
-                    //Pixel shader
-                    //Write color rt
-                    colorRT[x, y] = OpaqueLighting(positionW, normalW, uv);
-
-                    //Write depth rt
-                    depthRT[x, y] = depth;
-                }
-            }
-        }
     }
 
     public ScreenColor OpaqueLighting(Vector4 positionW, Vector4 normalW, Vector2 uv)

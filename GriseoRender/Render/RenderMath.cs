@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace GriseoRenderer.Render;
 
@@ -89,7 +90,6 @@ public static class RenderMath
         float a = 1 - b - c;
         return (a, b, c);
     }
-
 
     public static (float a, float b, float c) GetBCCoord(Vector4 pA, Vector4 pB, Vector4 pC, Vector2 p)
     {

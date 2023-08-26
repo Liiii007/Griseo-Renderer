@@ -23,3 +23,10 @@ public struct VertexOut
     public Vector4 NormalW;
     public Vector2 TexCoord;
 }
+
+public struct TriangleIn
+{
+    public VertexOut v1;
+    public VertexOut v2;
+    public VertexOut v3;
+}
