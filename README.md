@@ -7,7 +7,7 @@
 - [x] Extract component and pipeline object
 - [x] Draw a triangle
 - [x] Draw a box from obj file
-- [ ] Culling
+- [x] Culling && Depth buffer
 - [ ] Apply phong lighting model to the box
 - [ ] Apply texture and normal map to the box
 - [ ] Add skybox support
