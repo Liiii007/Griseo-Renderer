@@ -24,8 +24,8 @@ public class Mesh
 
                 Vertices[i] = new Vertex()
                 {
-                    Position = new Vector4(pos.X, pos.Y, pos.Z, 1),
-                    Normal = new Vector4(normal.X, normal.Y, normal.Z, 0),
+                    PositionW = new Vector4(pos.X, pos.Y, pos.Z, 1),
+                    NormalW = new Vector4(normal.X, normal.Y, normal.Z, 0),
                     TexCoord = new Vector2(uv.X, uv.Y)
                 };
             }

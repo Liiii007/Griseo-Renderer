@@ -30,7 +30,12 @@ public static class RenderMath
         return MathF.Max(a, MathF.Max(b, c));
     }
 
-    public static (Vector2 min, Vector2 max) GetBoundBox(Vector2 p1, Vector2 p2, Vector2 p3)
+    public static float ToRadius(float degree)
+    {
+        return MathF.PI * degree / 180f;
+    }
+
+    public static (Vector2 min, Vector2 max) GetBoundBox2D(Vector2 p1, Vector2 p2, Vector2 p3)
     {
         Vector2 min = new()
         {
@@ -44,6 +49,26 @@ public static class RenderMath
         };
 
         return (min, max);
+    }
+
+    public static (Vector2 min, Vector2 max) GetBoundBox2D(Vector3 p1, Vector3 p2, Vector3 p3)
+    {
+        return GetBoundBox2D(ToVector2(p1), ToVector2(p2), ToVector2(p3));
+    }
+    
+    public static (Vector2 min, Vector2 max) GetBoundBox2D(Vector4 p1, Vector4 p2, Vector4 p3)
+    {
+        return GetBoundBox2D(ToVector2(p1), ToVector2(p2), ToVector2(p3));
+    }
+
+    public static Vector2 ToVector2(Vector3 v)
+    {
+        return new Vector2(v.X, v.Y);
+    }
+    
+    public static Vector2 ToVector2(Vector4 v)
+    {
+        return new Vector2(v.X, v.Y);
     }
 
     public static (float a, float b, float c) GetBCCoord(Vector2 pA, Vector2 pB, Vector2 pC, Vector2 p)
@@ -63,6 +88,12 @@ public static class RenderMath
                   ((ya - yc) * xb + (xc - xa) * yb + xa * yc - xc * ya);
         float a = 1 - b - c;
         return (a, b, c);
+    }
+
+
+    public static (float a, float b, float c) GetBCCoord(Vector4 pA, Vector4 pB, Vector4 pC, Vector2 p)
+    {
+        return GetBCCoord(ToVector2(pA), ToVector2(pB), ToVector2(pC), p);
     }
 
     public static Vector4 Multiply(Matrix4x4 mat, Vector4 vec)
@@ -97,7 +128,9 @@ public static class RenderMath
         return v1.X * v2.X + v1.Y * v2.Y + v1.Z * v2.Z;
     }
 
-    //Left hands
+    /// <summary>
+    /// Left hand cross product
+    /// </summary>
     public static Vector4 Cross(Vector4 u, Vector4 v)
     {
         return new Vector4()
@@ -107,5 +140,10 @@ public static class RenderMath
             Z = u.X * v.Y - u.Y * v.X,
             W = 0
         };
+    }
+
+    public static float Clamp01(float f)
+    {
+        return Math.Clamp(f, 0f, 1f);
     }
 }

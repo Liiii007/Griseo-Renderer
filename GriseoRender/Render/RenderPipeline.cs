@@ -1,10 +1,12 @@
 ﻿#pragma warning disable CS8618
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using PixelPainter.Render;
 
 namespace GriseoRenderer.Render;
 
@@ -13,7 +15,9 @@ public class RenderPipeline
     private Image _screen;
     private Camera _camera;
     private List<RenderObject> _objects;
+    private List<DirectLight> _lights;
     private List<RenderTarget> _rts;
+    private List<DepthRenderTarget> _drts;
     private Stopwatch _stopwatch;
 
     public void Init(Image screen, Camera camera)
@@ -23,10 +27,16 @@ public class RenderPipeline
         _camera = camera;
 
         _objects = new List<RenderObject>();
+        _lights = new List<DirectLight>();
         _rts = new List<RenderTarget>()
         {
-            new RenderTarget(1280, 720),
-            new RenderTarget(1280, 720)
+            new(1280, 720),
+            new(1280, 720)
+        };
+        _drts = new List<DepthRenderTarget>()
+        {
+            new(1280, 720),
+            new(1280, 720)
         };
     }
 
@@ -35,7 +45,13 @@ public class RenderPipeline
         _objects.Add(renderObject);
     }
 
+    public void AddDirectLight(DirectLight light)
+    {
+        _lights.Add(light);
+    }
+
     public RenderTarget CurrentRT => _rts[CurrentFrame % _rts.Count];
+    public DepthRenderTarget CurrentDepthRT => _drts[CurrentFrame % _drts.Count];
     public int CurrentFrame { get; private set; }
     public double DeltaTime { get; private set; }
     public int FPS => (int)(1 / (DeltaTime >= 0 ? DeltaTime : 2));
@@ -44,14 +60,17 @@ public class RenderPipeline
     {
         double startTime = _stopwatch.Elapsed.TotalSeconds;
 
-        var rt = CurrentRT;
-        rt.Clear(ScreenColor.Black);
+        var colorRT = CurrentRT;
+        var depthRT = CurrentDepthRT;
+        colorRT.Clear(ScreenColor.Black);
+        depthRT.Clear(-1);
 
-        RenderBackgroundUV();
+        // RenderLine();
+        // RenderBackgroundUV();
 
         foreach (var obj in _objects)
         {
-            RenderObject(obj, rt);
+            RenderObject(obj, colorRT, depthRT);
         }
 
         SwapAndShow();
@@ -60,17 +79,20 @@ public class RenderPipeline
         DeltaTime = (endTime - startTime);
     }
 
-    public void RenderObject(RenderObject obj, RenderTarget rt)
+
+    public void RenderObject(RenderObject obj, RenderTarget colorRT, DepthRenderTarget depthRT)
     {
         //Vertex
-        Matrix4x4 mvp = _camera.VP * obj.M;
+        Matrix4x4 m = obj.M;
+        Matrix4x4 mvp = _camera.VP * m;
 
         for (int i = 0; i < obj.Mesh.Vertices.Length; i++)
         {
             Vertex vin = obj.Mesh.Vertices[i];
             VertexOut vout = new VertexOut();
-            vout.Position = RenderMath.Multiply(mvp, vin.Position);
-            vout.Normal = RenderMath.Multiply(mvp, vin.Normal);
+            vout.PositionH = RenderMath.Multiply(mvp, vin.PositionW);
+            vout.PositionW = RenderMath.Multiply(m, vin.PositionW);
+            vout.NormalW = RenderMath.Multiply(m, vin.NormalW);
             vout.TexCoord = vin.TexCoord;
 
             obj.VerticesOut[i] = vout;
@@ -78,28 +100,37 @@ public class RenderPipeline
 
         //Rasterization
         var mViewport = Matrix4x4.Identity;
-        mViewport[0, 0] = rt.Width / 2f;
-        mViewport[0, 3] = rt.Width / 2f;
-        mViewport[1, 1] = rt.Height / 2f;
-        mViewport[1, 3] = rt.Height / 2f;
+        mViewport[0, 0] = colorRT.Width / 2f;
+        mViewport[0, 3] = colorRT.Width / 2f;
+        mViewport[1, 1] = colorRT.Height / 2f;
+        mViewport[1, 3] = colorRT.Height / 2f;
 
         for (int i = 0; i < obj.VerticesOut.Length; i++)
         {
             VertexOut vout = obj.VerticesOut[i];
-            vout.Position /= vout.Position.W;
-            vout.Position = RenderMath.Multiply(mViewport, vout.Position);
+
+            //Viewport transform(0,0,width,height)
+            vout.PositionH /= vout.PositionH.W;
+            vout.PositionH = RenderMath.Multiply(mViewport, vout.PositionH);
             obj.VerticesOut[i] = vout;
         }
 
         //Fragment
         var indices = obj.Mesh.Indices;
+
+        var fin = new VertexOut[3];
+
         for (int i = 0; i < indices.Length; i++)
         {
             var faceIndex = indices[i];
 
-            Vector4 p1 = obj.VerticesOut[faceIndex.a].Position;
-            Vector4 p2 = obj.VerticesOut[faceIndex.b].Position;
-            Vector4 p3 = obj.VerticesOut[faceIndex.c].Position;
+            fin[0] = obj.VerticesOut[faceIndex.a];
+            fin[1] = obj.VerticesOut[faceIndex.b];
+            fin[2] = obj.VerticesOut[faceIndex.c];
+
+            Vector4 p1 = fin[0].PositionW;
+            Vector4 p2 = fin[1].PositionW;
+            Vector4 p3 = fin[2].PositionW;
 
             if (p1.Z < -1 || p2.Z < -1 || p3.Z < -1)
             {
@@ -110,20 +141,20 @@ public class RenderPipeline
             Vector4 v1 = p2 - p1;
             Vector4 v2 = p3 - p2;
 
-            Vector4 normal = RenderMath.Cross(v1, v2);
+            Vector4 normalFace = RenderMath.Cross(v1, v2);
 
-            if (RenderMath.Dot(normal, _camera.Forward) > 0)
+            if (RenderMath.Dot(normalFace, _camera.Forward) > 0)
             {
                 continue;
             }
 
-            DrawTriangle(p1, p2, p3, rt);
+            Rasterlation(fin, colorRT, depthRT);
         }
 
         //Debug:Draw dot in vertices
         for (int i = 0; i < obj.VerticesOut.Length; i++)
         {
-            var pos = obj.VerticesOut[i].Position;
+            var pos = obj.VerticesOut[i].PositionH;
             var posInScreen = new Vector2(pos.X, pos.Y);
             Gizmos.DrawDot(posInScreen, 2);
         }
@@ -152,35 +183,81 @@ public class RenderPipeline
         }
     }
 
-    private void DrawTriangle(Vector4 p1, Vector4 p2, Vector4 p3, RenderTarget colorRT)
+    private void RenderLine()
     {
-        DrawTriangle(new Vector2(p1.X, p1.Y), new Vector2(p2.X, p2.Y), new Vector2(p3.X, p3.Y), colorRT);
-    }
-
-    private void DrawTriangle(Vector2 p1, Vector2 p2, Vector2 p3, RenderTarget colorRT)
-    {
-        var bound = RenderMath.GetBoundBox(p1, p2, p3);
-        var xMin = (int)bound.min.X;
-        var xMax = (int)bound.max.X;
-        var yMin = (int)bound.min.Y;
-        var yMax = (int)bound.max.Y;
-
-        if (xMin < 0 || xMax >= colorRT.Width || yMin < 0 || yMax >= colorRT.Height)
+        var target = CurrentRT;
+        for (int i = 0; i < target.Height; i++)
         {
-            return;
+            target[target.Width / 2, i] = ScreenColor.Red;
         }
 
-        for (int x = xMin; x < xMax; x++)
+        for (int i = 0; i < target.Width; i++)
         {
-            for (int y = yMin; y < yMax; y++)
-            {
-                var (a, b, c) = RenderMath.GetBCCoord(p1, p2, p3, new(x, y));
+            target[i, target.Height / 2] = ScreenColor.Red;
+        }
+    }
 
-                if (0 < a && a < 1 && 0 < b && b < 1 && 0 < c && c < 1)
+    private void Rasterlation(VertexOut[] fin, RenderTarget colorRT, DepthRenderTarget depthRT)
+    {
+        var p0H = fin[0].PositionH;
+        var p1H = fin[1].PositionH;
+        var p2H = fin[2].PositionH;
+
+        var bound = RenderMath.GetBoundBox2D(p0H, p1H, p2H);
+        var xMin = (int)(bound.min.X + 0.5f);
+        var xMax = (int)(bound.max.X + 0.5f);
+        var yMin = (int)(bound.min.Y + 0.5f);
+        var yMax = (int)(bound.max.Y + 0.5f);
+
+        xMin = Math.Max(0, xMin);
+        xMax = Math.Min(colorRT.Width - 1, xMax);
+        yMin = Math.Max(0, yMin);
+        yMax = Math.Max(colorRT.Height - 1, yMax);
+
+        for (int x = xMin; x <= xMax; x++)
+        {
+            for (int y = yMin; y <= yMax; y++)
+            {
+                var (a, b, c) = RenderMath.GetBCCoord(p0H, p1H, p2H, new(x, y));
+                var depth = p0H.Z * a + p1H.Z * b + p2H.Z * c;
+
+                //Early-Z test: small->near
+                if (depth <= depthRT[x, y])
                 {
-                    colorRT[x, y] = ScreenColor.White;
+                    continue;
+                }
+
+                float minValue = 0;
+                float maxValue = 1;
+
+                if (minValue <= a && a <= maxValue && minValue <= b && b <= maxValue && minValue <= c && c <= maxValue)
+                {
+                    var positionW = fin[0].PositionW * a + fin[1].PositionW * b + fin[2].PositionW * c;
+                    var normalW = fin[0].NormalW * a + fin[1].NormalW * b + fin[2].NormalW * c;
+
+                    //Pixel shader
+                    //Write color rt
+                    colorRT[x, y] = Lighting(positionW, normalW);
+
+                    //Write depth rt
+                    depthRT[x, y] = depth;
                 }
             }
         }
+    }
+
+    private ScreenColor Lighting(Vector4 positionW, Vector4 normalW)
+    {
+        var ambient = new RealColor(0.1f, 0.1f, 0.1f);
+        var diffuse = new RealColor();
+
+        foreach (var light in _lights)
+        {
+            diffuse += light.Color * light.Intensity * RenderMath.Dot(light.Forward, -normalW);
+        }
+
+        var rColor = ambient + diffuse;
+        var screenColor = rColor.AsScreenColor;
+        return screenColor;
     }
 }

@@ -4,6 +4,7 @@ using System.Windows;
 using GriseoRenderer.Foundation;
 using GriseoRenderer.Render;
 using GriseoRenderer.Resources;
+using PixelPainter.Render;
 
 namespace GriseoRenderer
 {
@@ -15,39 +16,21 @@ namespace GriseoRenderer
         {
             InitializeComponent();
 
+            //Init
             var cameraManager = Singleton<CameraManager>.Instance;
             cameraManager.Init();
             Singleton<RenderPipeline>.Instance.Init(RenderResult, cameraManager.MainCamera);
-            Singleton<InputManager>.Instance.OnW += () =>
-            {
-                cameraManager.MainCamera.AddPosition(new Vector3(0, 0, -0.1f));
-            };
-            Singleton<InputManager>.Instance.OnS += () =>
-            {
-                cameraManager.MainCamera.AddPosition(new Vector3(0, 0, 0.1f));
-            };
-            Singleton<InputManager>.Instance.OnA += () =>
-            {
-                cameraManager.MainCamera.AddPosition(new Vector3(-0.1f, 0, 0));
-            };
-            Singleton<InputManager>.Instance.OnD += () =>
-            {
-                cameraManager.MainCamera.AddPosition(new Vector3(0.1f, 0, 0));
-            };
-            Singleton<InputManager>.Instance.OnQ += () =>
-            {
-                cameraManager.MainCamera.AddPosition(new Vector3(0, -0.1f, 0));
-            };
-            Singleton<InputManager>.Instance.OnE += () =>
-            {
-                cameraManager.MainCamera.AddPosition(new Vector3(0, 0.1f, 0));
-            };
 
+            //TODO:Move to json config
+            //Add objects and lights
             Mesh box = new Mesh(@"C:\Users\liiii\Documents\GitHub\Griseo-Render\GriseoRender\Box.obj");
             RenderObject obj = new RenderObject(box);
             Singleton<RenderPipeline>.Instance.AddRenderObject(obj);
+            DirectLight light = new DirectLight(Quaternion.CreateFromYawPitchRoll(RenderMath.ToRadius(45),
+                RenderMath.ToRadius(45), RenderMath.ToRadius(45)));
+            Singleton<RenderPipeline>.Instance.AddDirectLight(light);
 
-            //Start Render Tick
+            //Start tick thread
             Thread renderJob = new Thread(Tick);
             renderJob.IsBackground = true;
             renderJob.Start();
@@ -65,7 +48,8 @@ namespace GriseoRenderer
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     double deltaTime = pipeline.DeltaTime * 1000;
-                    Title = $"Griseo Renderer  DeltaMS:{deltaTime:0.00}, FPS:{pipeline.FPS}, Frame:{pipeline.CurrentFrame}";
+                    Title =
+                        $"Griseo Renderer  DeltaMS:{deltaTime:0.00}, FPS:{pipeline.FPS}, Frame:{pipeline.CurrentFrame}";
                 });
             }
         }
