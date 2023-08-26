@@ -26,8 +26,7 @@ namespace GriseoRenderer
             Mesh box = new Mesh(@"C:\Users\liiii\Documents\GitHub\Griseo-Render\GriseoRender\Box.obj");
             RenderObject obj = new RenderObject(box);
             Singleton<RenderPipeline>.Instance.AddRenderObject(obj);
-            DirectLight light = new DirectLight(Quaternion.CreateFromYawPitchRoll(RenderMath.ToRadius(45),
-                RenderMath.ToRadius(45), RenderMath.ToRadius(45)));
+            DirectLight light = new DirectLight(new(1, -1, 0, 0));
             Singleton<RenderPipeline>.Instance.AddDirectLight(light);
 
             //Start tick thread

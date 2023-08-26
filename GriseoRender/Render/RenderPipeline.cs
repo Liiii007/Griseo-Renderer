@@ -203,6 +203,10 @@ public class RenderPipeline
         var p1H = fin[1].PositionH;
         var p2H = fin[2].PositionH;
 
+        var p0W = fin[0].PositionW;
+        var p1W = fin[1].PositionW;
+        var p2W = fin[2].PositionW;
+
         var bound = RenderMath.GetBoundBox2D(p0H, p1H, p2H);
         var xMin = (int)(bound.min.X + 0.5f);
         var xMax = (int)(bound.max.X + 0.5f);
@@ -212,7 +216,7 @@ public class RenderPipeline
         xMin = Math.Max(0, xMin);
         xMax = Math.Min(colorRT.Width - 1, xMax);
         yMin = Math.Max(0, yMin);
-        yMax = Math.Max(colorRT.Height - 1, yMax);
+        yMax = Math.Min(colorRT.Height - 1, yMax);
 
         for (int x = xMin; x <= xMax; x++)
         {
@@ -237,7 +241,7 @@ public class RenderPipeline
 
                     //Pixel shader
                     //Write color rt
-                    colorRT[x, y] = Lighting(positionW, normalW);
+                    colorRT[x, y] = OpaqueLighting(positionW, normalW);
 
                     //Write depth rt
                     depthRT[x, y] = depth;
@@ -246,18 +250,24 @@ public class RenderPipeline
         }
     }
 
-    private ScreenColor Lighting(Vector4 positionW, Vector4 normalW)
+    private ScreenColor OpaqueLighting(Vector4 positionW, Vector4 normalW)
     {
         var ambient = new RealColor(0.1f, 0.1f, 0.1f);
         var diffuse = new RealColor();
 
         foreach (var light in _lights)
         {
-            diffuse += light.Color * light.Intensity * RenderMath.Dot(light.Forward, -normalW);
+            var lightColor = light.Color * light.Intensity * RenderMath.Dot(light.Forward, -normalW);
+            lightColor.R = Math.Max(0, lightColor.R);
+            lightColor.G = Math.Max(0, lightColor.G);
+            lightColor.B = Math.Max(0, lightColor.B);
+            lightColor.A = Math.Max(0, lightColor.A);
+            diffuse += lightColor;
         }
 
         var rColor = ambient + diffuse;
         var screenColor = rColor.AsScreenColor;
+        screenColor.A = 1f;
         return screenColor;
     }
 }
