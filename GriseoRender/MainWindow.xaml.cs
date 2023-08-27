@@ -22,11 +22,12 @@ namespace GriseoRenderer
             var cameraManager = Singleton<CameraManager>.Instance;
             cameraManager.Init();
             Singleton<RenderPipeline>.Instance.Init(RenderResult, cameraManager.MainCamera);
-            Singleton<JobScheduler>.Instance.Init();
-            
-            var handle = Singleton<JobScheduler>.Instance.Schedule(new JobsTest(), 0, 17, 4);
+            Singleton<JobScheduler>.Instance.Init(16);
+
+            var jobTest = new JobsTest();
+            var handle = JobScheduler.Schedule(jobTest, 0, 1, 1);
             handle.Complete();
-            
+
             //TODO:Move to json config
             //Add objects and lights
             Mesh box = new Mesh(@"C:\Users\liiii\Documents\GitHub\Griseo-Render\GriseoRender\Box.obj");

@@ -195,7 +195,7 @@ public class RenderPipeline
         {
             target = target
         };
-        var handle = Singleton<JobScheduler>.Instance.Schedule(job, 0, target.Length, 2048);
+        var handle = JobScheduler.Schedule(job, 0, target.Length, 2048);
         handle.Complete();
     }
 
@@ -253,7 +253,7 @@ public class RenderPipeline
             pipeline = this
         };
 
-        var handle = Singleton<JobScheduler>.Instance.Schedule(job, 0, width * height, 128);
+        var handle = JobScheduler.Schedule(job, 0, width * height, 128);
         handle.Complete();
     }
 

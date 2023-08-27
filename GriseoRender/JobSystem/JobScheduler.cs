@@ -1,18 +1,22 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading;
+using GriseoRenderer.Foundation;
 
 namespace GriseoRenderer.JobSystem;
 
 public class JobScheduler
 {
-    private Semaphore _semaphore = new Semaphore(0, int.MaxValue);
-    private Thread[] _threads = new Thread[16];
-    private ConcurrentQueue<IJob> _bundles = new ConcurrentQueue<IJob>();
+    private readonly Semaphore _semaphore = new Semaphore(0, int.MaxValue);
+    private Thread[] _threads;
+    private readonly ConcurrentQueue<Coroutine> _bundles = new();
 
-    public void Init()
+    public void Init(int threadSize = 16)
     {
-        for (int i = 0; i < 16; i++)
+        _threads = new Thread[threadSize];
+        for (int i = 0; i < threadSize; i++)
         {
             _threads[i] = new Thread(DoJob);
             _threads[i].IsBackground = true;
@@ -20,8 +24,14 @@ public class JobScheduler
         }
     }
 
-    public JobHandle Schedule<T>(T jobs, int startIndex, int endIndex, int batchSize) where T : struct, IJobFor
+    public static JobHandle Schedule<T>(T jobs, int startIndex, int endIndex, int batchSize,
+        JobHandle dependency = null)
+        where T : struct, IYieldJobFor
     {
+        var instance = Singleton<JobScheduler>.Instance;
+        var bundles = instance._bundles;
+        var semaphore = instance._semaphore;
+
         if (endIndex <= startIndex)
         {
             throw new ArgumentException("Index error");
@@ -33,12 +43,20 @@ public class JobScheduler
         {
             bundleCount++;
             int rightIndex = Math.Min(endIndex, i + batchSize);
-            _bundles.Enqueue(new JobBundle<T>(jobs, i, rightIndex, handle));
+            var ie = jobs.Execute(i, rightIndex);
+            Coroutine coroutine = new Coroutine(ie, handle, dependency);
+            bundles.Enqueue(coroutine);
         }
-        
+
         handle.Init(bundleCount);
-        _semaphore.Release(bundleCount);
+        semaphore.Release(bundleCount);
         return handle;
+    }
+
+    private void AddWaitJob(Coroutine originJob)
+    {
+        _bundles.Enqueue(originJob);
+        _semaphore.Release(1);
     }
 
     private void DoJob()
@@ -49,8 +67,14 @@ public class JobScheduler
 
             if (_bundles.TryDequeue(out var job))
             {
-                job.Execute();
-                Console.WriteLine($"Job Done");
+                while (job.MoveNext())
+                {
+                    if (job.IsBlocking())
+                    {
+                        AddWaitJob(job);
+                        break;
+                    }
+                }
             }
         }
     }

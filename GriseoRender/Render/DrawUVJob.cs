@@ -1,20 +1,26 @@
-﻿using GriseoRenderer.JobSystem;
+﻿using System.Collections;
+using GriseoRenderer.JobSystem;
 
 namespace GriseoRenderer.Render;
 
-public struct DrawUVJob : IJobFor
+public struct DrawUVJob : IYieldJobFor
 {
     public RenderTarget target;
 
-    public void Execute(int index)
+    public IEnumerator Execute(int start, int end)
     {
-        int x = index % target.Width;
-        int y = index / target.Width;
+        for (int index = start; index < end; index++)
+        {
+            int x = index % target.Width;
+            int y = index / target.Width;
 
-        float uvX = (float)x / target.Width;
-        float uvY = (float)y / target.Height;
+            float uvX = (float)x / target.Width;
+            float uvY = (float)y / target.Height;
 
-        ScreenColor color = new ScreenColor(uvX, uvY, 0);
-        target[x, y] = color;
+            ScreenColor color = new ScreenColor(uvX, uvY, 0);
+            target[x, y] = color;
+        }
+        
+        yield break;
     }
 }
