@@ -15,7 +15,7 @@ public class DirectLight
     {
         Rotation = rotation;
         Color = new RealColor(1);
-        Intensity = 0.5f;
+        Intensity = 1f;
     }
 
     public Vector4 Forward => Vector4.Normalize(Vector4.Transform(new Vector4(0, 0, -1, 0), Rotation));

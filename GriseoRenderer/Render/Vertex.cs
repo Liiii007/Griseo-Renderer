@@ -20,6 +20,7 @@ public struct VertexOut
 {
     public Vector4 PositionH;
     public Vector4 PositionW;
+    public Vector4 PositionLightH;
     public Vector4 NormalW;
     public Vector2 TexCoord;
 }

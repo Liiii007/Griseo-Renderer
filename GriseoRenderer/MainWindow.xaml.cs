@@ -30,11 +30,17 @@ namespace GriseoRenderer
 
             //TODO:Move to json config
             //Add objects and lights
-            Mesh box = new Mesh(@"C:\Users\liiii\Documents\GitHub\Griseo-Render\GriseoRender\Box.obj");
-            Texture mainTex = new Texture(@"C:\Users\liiii\Documents\GitHub\Griseo-Render\GriseoRender\MainTex.png");
+            Mesh box = new Mesh(@"C:\Users\liiii\Documents\GitHub\Griseo-Render\GriseoRenderer\Box.obj");
+            Mesh plane = new Mesh(@"C:\Users\liiii\Documents\GitHub\Griseo-Render\GriseoRenderer\Plane.obj");
+            Texture mainTex = new Texture(@"C:\Users\liiii\Documents\GitHub\Griseo-Render\GriseoRenderer\MainTex.png");
             RenderObject obj = new RenderObject(box, mainTex);
+            RenderObject obj1 = new RenderObject(plane, mainTex);
+
+            obj.Translation = new Translation(new Vector3(0, 1, 0.5f), Quaternion.Zero, new Vector3(0.5f, 0.5f, 0.5f));
+
             Singleton<RenderPipeline>.Instance.AddRenderObject(obj);
-            light = new DirectLight(RenderMath.EulerToQuaternion(0, 0, 0));
+            Singleton<RenderPipeline>.Instance.AddRenderObject(obj1);
+            light = new DirectLight(RenderMath.EulerToQuaternion(0, -90, 0));
             Singleton<RenderPipeline>.Instance.AddDirectLight(light);
 
             //Start tick thread

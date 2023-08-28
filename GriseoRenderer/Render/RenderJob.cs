@@ -13,6 +13,7 @@ public struct RenderJob : IYieldJobFor
     public RenderTarget colorRT;
     public DepthRenderTarget depthRT;
     public RenderPipeline pipeline;
+    public bool depthOnly;
 
     public IEnumerator Execute(int startIndex, int endIndex)
     {
@@ -28,7 +29,7 @@ public struct RenderJob : IYieldJobFor
             var depth = p0H.Z * a + p1H.Z * b + p2H.Z * c;
 
             //Early-Z test: small->far
-            if (depth <= depthRT[x, y])
+            if (depth >= depthRT[x, y])
             {
                 continue;
             }
@@ -38,19 +39,25 @@ public struct RenderJob : IYieldJobFor
 
             if (minValue <= a && a <= maxValue && minValue <= b && b <= maxValue && minValue <= c && c <= maxValue)
             {
-                var positionW = fin.v1.PositionW * a + fin.v2.PositionW * b + fin.v3.PositionW * c;
-                var normalW = fin.v1.NormalW * a + fin.v2.NormalW * b + fin.v3.NormalW * c;
-                var uv = fin.v1.TexCoord * a + fin.v2.TexCoord * b + fin.v3.TexCoord * c;
+                if (!depthOnly)
+                {
+                    var positionW = fin.v1.PositionW * a + fin.v2.PositionW * b + fin.v3.PositionW * c;
+                    var normalW = fin.v1.NormalW * a + fin.v2.NormalW * b + fin.v3.NormalW * c;
+                    var uv = fin.v1.TexCoord * a + fin.v2.TexCoord * b + fin.v3.TexCoord * c;
+                    var positionLightH = fin.v1.PositionLightH * a + fin.v2.PositionLightH * b +
+                                         fin.v3.PositionLightH * c;
+                    var shadowRate = pipeline.SampleShadowMap(positionLightH);
 
-                //Pixel shader
-                //Write color rt
-                colorRT[x, y] = pipeline.OpaqueLighting(positionW, normalW, uv);
+                    //Pixel shader
+                    //Write color rt
+                    colorRT[x, y] = pipeline.OpaqueLighting(positionW, normalW, uv, shadowRate);
+                }
 
                 //Write depth rt
                 depthRT[x, y] = depth;
             }
         }
-        
+
         yield break;
     }
 }
