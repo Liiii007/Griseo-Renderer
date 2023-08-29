@@ -11,10 +11,11 @@
 - [x] Apply phong lighting model to the box
 - [x] Apply texture and normal map to the box
 - [x] Multi-thread render with job system
-- [ ] ShadowMap support
-- [ ] Bloom support
+- [x] ShadowMap support
+      
+All Done!!! Ready to ray tracing part.
 
-## Ray-Tracking Goals
+## Ray-Tracing Goals
 TODO
 
 ## Using
